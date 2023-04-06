@@ -40,6 +40,7 @@
 ;; TODO 2023-04-06 06:27 +0300: completion to select from saved playlists
 
 (require 'dired)
+(require 'json)
 
 (defgroup mandoura ()
   "Play audio or video files with mpv using Dired."
@@ -70,12 +71,21 @@ Used as a fallback value for `mandoura-with-args'."
 (defvar mandoura-playlist-file-base "mandoura-playlist-"
   "Base of temporary file name created by Mandoura commands.")
 
+(defvar mandoura--mpv-socket nil
+  "Last value of the mpv socket.")
+
+(defun mandoura--return-mpv-socket ()
+  "Return mpv socket."
+  (or mandoura--mpv-socket
+      (setq mandoura--mpv-socket (make-temp-file "mandoura-mpv-socket"))))
+
 (defun mandoura-with-args (file &rest args)
   "Use mpv to play back FILE with ARGS.
 ARGS is a list of strings."
   `("mpv"
     ,(format "--playlist=%s" file)
-    ,@(if args args mandoura-default-args)))
+    ,@(if args args mandoura-default-args)
+    ,(format "--input-ipc-server=%s" (mandoura--return-mpv-socket))))
 
 (defvar mandoura-last-playlist nil
   "Last playlist file.")
