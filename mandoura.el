@@ -38,7 +38,6 @@
 
 ;; TODO 2023-04-06 06:27 +0300: Save playlist to user predefined path
 ;; TODO 2023-04-06 06:27 +0300: completion to select from saved playlists
-;; TODO 2023-04-06 06:27 +0300: Optionally replay last playlist
 
 (require 'dired)
 
@@ -81,6 +80,14 @@ ARGS is a list of strings."
 (defvar mandoura-last-playlist nil
   "Last playlist file.")
 
+(defun mandoura--return-playlist ()
+  "Return a new temporaty file or prompt for the previous one."
+  (if (and mandoura-last-playlist
+           (file-exists-p mandoura-last-playlist)
+           (yes-or-no-p "Playlist exists; replay it?"))
+      mandoura-last-playlist
+    (make-temp-file mandoura-playlist-file-base)))
+
 ;;;###autoload
 (defun mandoura-play-playlist (files)
   "Create a playlist out of FILES and play it with mpv.
@@ -90,18 +97,24 @@ Dired buffer, or the marked files.  Directories are covered as
 well.  In Lisp, FILES is a list of strings representing file
 system paths.
 
-The playlist is stored in the variable `temporary-file-directory'
-with a base bame of `mandoura-playlist-file-base'."
+FILES are compiled into a single list that is store in
+`mandoura-last-playlist'.  That is a temporary file.  It is
+located at the value of the variable `temporary-file-directory'
+with a base name of `mandoura-playlist-file-base'.
+
+If the playlist exists as a `mandoura-last-playlist' file, prompt
+the user to replay it.  Else create a new temporary file."
   (interactive (list (dired-get-marked-files)))
   (unless (executable-find "mpv")
     (error "Cannot find mpv executable; aborting"))
   (mandoura-kill-running-process)
-  (let* ((playlist (make-temp-file mandoura-playlist-file-base))
-         (buf (find-file-noselect playlist)))
-    (with-current-buffer buf
-      (erase-buffer)
-      (insert (mapconcat #'identity files "\n"))
-      (save-buffer))
+  (when-let* ((playlist (mandoura--return-playlist))
+              (buf (find-file-noselect playlist)))
+    (unless (equal playlist mandoura-last-playlist)
+      (with-current-buffer buf
+        (erase-buffer)
+        (insert (mapconcat #'identity files "\n"))
+        (save-buffer)))
     (when (make-process
            :name "mandoura"
            :buffer (get-buffer-create "*mandoura*")
