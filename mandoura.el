@@ -132,5 +132,45 @@ the user to replay it.  Else create a new temporary file."
            :stderr (get-buffer-create "*mandoura-error-output*"))
       (setq mandoura-last-playlist playlist))))
 
+;;;; Communicate with the socket (--input-ipc-server)
+
+(defun mandoura--get-from-mpv-socket (property)
+  "Get PROPERTY from `mandoura--return-mpv-socket'."
+  (unless (executable-find "socat")
+    (error "Cannot find `socat'; aborting"))
+  (shell-command-to-string
+   (format "echo '{ %S: [%S, %S] }' | socat - %s" "command" "get_property" property (mandoura--return-mpv-socket))))
+
+(defun mandoura--get-json-data (json)
+  "Get `:data' from plist returned by JSON string."
+  (let ((json-object-type 'plist))
+    (plist-get (json-read-from-string json) :data)))
+
+;; TODO 2023-04-06: How to convert seconds to minutes?
+(defvar mandoura--mpv-properties
+  '(("media-title" . "Title of current item")
+    ("duration" . "Duration of current item")
+    ("path" . "File system path")
+    ("filename" . "File name")
+    ("time-pos" . "Time position")
+    ("time-remaining" . "Time remaining"))
+  "Selection of mpv properties and their descriptions for use in Mandoura prompts.")
+
+(defun mandoura--property-annotation (candidate)
+  "Completion annotation function for CANDIDATE in `mandoura--mpv-properties'."
+  (format " -- %s" (alist-get candidate mandoura--mpv-properties "" nil #'equal)))
+
+(defun mandoura--property-prompt ()
+  "Prompt for an mpv property."
+  (let ((completion-extra-properties `(:annotation-function ,#'mandoura--property-annotation)))
+    (completing-read "Select mpv property: " mandoura--mpv-properties)))
+
+(defun mandoura-return-data (property)
+  "Return data from the mpv socket matching PROPERTY."
+  (interactive (list (mandoura--property-prompt)))
+  (message "%s"
+           (mandoura--get-json-data
+            (mandoura--get-from-mpv-socket property))))
+
 (provide 'mandoura)
 ;;; mandoura.el ends here
