@@ -37,7 +37,6 @@
 ;;; Code:
 
 ;; TODO 2023-04-06 06:27 +0300: Save playlist to user predefined path
-;; TODO 2023-04-06 06:27 +0300: completion to select from saved playlists
 
 (require 'dired)
 (require 'json)
@@ -53,6 +52,13 @@
 Used as a fallback value for `mandoura-with-args'."
   :group 'mandoura
   :type '(repeat string))
+
+(defcustom mandoura-saved-playlist-directory nil
+  "File system path where saved playlists are stored.
+A playlist is a file that contains paths to media files.  It does
+not need an extension to be readable by mpv."
+  :type '(file :must-match t)
+  :group 'mandoura)
 
 (defvar mandoura--process-name "mandoura"
   "Name of process made by `mandoura-play-files' or related.")
@@ -135,6 +141,35 @@ the user to replay it.  Else create a new temporary file."
            :command (mandoura-with-args playlist)
            :stderr (get-buffer-create "*mandoura-error-output*"))
       (setq mandoura-last-playlist playlist))))
+
+(defun mandoura--return-files (dir)
+  "Return list of files from DIR."
+  (directory-files dir :full nil :no-sort))
+
+(defun mandoura-playlist-prompt ()
+  "Prompt for playlist file in `mandoura-saved-playlist-directory'."
+  (when-let* ((dir mandoura-saved-playlist-directory)
+              ((file-exists-p dir))
+              ((file-directory-p dir)))
+    (completing-read "Select playlist file: "
+                     (mandoura--return-files dir)
+                     nil
+                     :require-match)))
+
+;;;###autoload
+(defun mandoura-play-playlist (playlist)
+  "Like `mandoura-play-files' but with given PLAYLIST file."
+  ;; (declare (interactive-only t))
+  (interactive (list (mandoura-playlist-prompt)))
+  (unless (executable-find "mpv")
+    (error "Cannot find mpv executable; aborting"))
+  (mandoura-kill-running-process)
+  (make-process
+   :name "mandoura"
+   :buffer (get-buffer-create "*mandoura*")
+   :command (mandoura-with-args playlist)
+   :stderr (get-buffer-create "*mandoura-error-output*"))
+  (setq mandoura-last-playlist playlist))
 
 ;;;; Communicate with the socket (--input-ipc-server)
 
