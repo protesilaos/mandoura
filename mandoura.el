@@ -139,7 +139,12 @@ the user to replay it.  Else create a new temporary file."
   (unless (executable-find "socat")
     (error "Cannot find `socat'; aborting"))
   (shell-command-to-string
-   (format "echo '{ %S: [%S, %S] }' | socat - %s" "command" "get_property" property (mandoura--return-mpv-socket))))
+   (format
+    "echo '{ %S: [%S, %S] }' | socat - %s"
+    "command"
+    "get_property"
+    property
+    (mandoura--return-mpv-socket))))
 
 (defun mandoura--get-json-data (json)
   "Get `:data' from plist returned by JSON string."
