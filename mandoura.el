@@ -55,7 +55,7 @@ Used as a fallback value for `mandoura-with-args'."
   :type '(repeat string))
 
 (defvar mandoura--process-name "mandoura"
-  "Name of process made by `mandoura-play-playlist' or related.")
+  "Name of process made by `mandoura-play-files' or related.")
 
 (defun mandoura--running-process-p ()
   "Return `mandoura--process-name' or nil."
@@ -103,7 +103,7 @@ Regardless of ARGS, always start mpv with --input-ipc-server."
     (make-temp-file mandoura-playlist-file-base)))
 
 ;;;###autoload
-(defun mandoura-play-playlist (files)
+(defun mandoura-play-files (files)
   "Create a playlist out of FILES and play it with mpv.
 
 When called interactively, FILES is either the file at point in a
