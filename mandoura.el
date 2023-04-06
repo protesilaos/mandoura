@@ -81,7 +81,11 @@ Used as a fallback value for `mandoura-with-args'."
 
 (defun mandoura-with-args (file &rest args)
   "Use mpv to play back FILE with ARGS.
-ARGS is a list of strings."
+
+ARGS is a list of strings.  If ARGS is nil use
+`mandoura-default-args'.
+
+Regardless of ARGS, always start mpv with --input-ipc-server."
   `("mpv"
     ,(format "--playlist=%s" file)
     ,@(if args args mandoura-default-args)
