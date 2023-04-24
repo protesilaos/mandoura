@@ -197,6 +197,7 @@ the user to replay it.  Else create a new temporary file."
     ("path" . "File system path")
     ("filename" . "File name")
     ("time-pos" . "Time position")
+    ;; TODO 2023-04-24: Artist name
     ("time-remaining" . "Time remaining"))
   "Selection of mpv properties and their descriptions for use in Mandoura prompts.")
 
