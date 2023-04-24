@@ -144,7 +144,7 @@ the user to replay it.  Else create a new temporary file."
 
 (defun mandoura--return-files (dir)
   "Return list of files from DIR."
-  (directory-files dir :full nil :no-sort))
+  (directory-files dir :full-path nil :no-sort))
 
 (defun mandoura-playlist-prompt ()
   "Prompt for playlist file in `mandoura-saved-playlist-directory'."
