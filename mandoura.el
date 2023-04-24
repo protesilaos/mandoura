@@ -146,6 +146,9 @@ the user to replay it.  Else create a new temporary file."
   "Return list of files from DIR."
   (directory-files dir :full-path nil :no-sort))
 
+(defvar mandoura--playlist-history nil
+  "Minibuffer history of `mandoura-playlist-prompt'.")
+
 (defun mandoura-playlist-prompt ()
   "Prompt for playlist file in `mandoura-saved-playlist-directory'."
   (when-let* ((dir mandoura-saved-playlist-directory)
@@ -154,7 +157,9 @@ the user to replay it.  Else create a new temporary file."
     (completing-read "Select playlist file: "
                      (mandoura--return-files dir)
                      nil
-                     :require-match)))
+                     :require-match
+                     nil
+                     'mandoura--playlist-history)))
 
 ;;;###autoload
 (defun mandoura-play-playlist (playlist)
