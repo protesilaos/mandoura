@@ -138,8 +138,7 @@ the user to replay it.  Else create a new temporary file."
     (when (make-process
            :name "mandoura"
            :buffer (get-buffer-create "*mandoura*")
-           :command (mandoura-with-args playlist)
-           :stderr (get-buffer-create "*mandoura-error-output*"))
+           :command (mandoura-with-args playlist))
       (setq mandoura-last-playlist playlist))))
 
 (defun mandoura--return-files (dir)
@@ -172,8 +171,7 @@ the user to replay it.  Else create a new temporary file."
   (make-process
    :name "mandoura"
    :buffer (get-buffer-create "*mandoura*")
-   :command (mandoura-with-args playlist)
-   :stderr (get-buffer-create "*mandoura-error-output*"))
+   :command (mandoura-with-args playlist))
   (setq mandoura-last-playlist playlist))
 
 ;;;; Communicate with the socket (--input-ipc-server)
