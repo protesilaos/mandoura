@@ -242,5 +242,30 @@ the user to replay it.  Else create a new temporary file."
            (mandoura--get-json-data
             (mandoura--get-from-mpv-socket property))))
 
+(defun mandoura--return-numeric-properties ()
+  "Return numeric properties from `mandoura--mpv-properties'."
+  (delq nil
+        (mapcar
+         (lambda (property)
+           (when (string-match-p "\\(duration\\|time-\\)" (car property))
+             (car property)))
+         mandoura--mpv-properties)))
+
+(defun mandoura-return-time-data (property)
+  "Like `mandoura-return-data' but convert numeric PROPERTY."
+  (let ((data (mandoura-return-data property)))
+    (if (member property (mandoura--return-numeric-properties))
+        (mandoura--seconds-to-minutes-or-hours
+         (mandoura--convert-string-to-integer data))
+      data)))
+
+(defun mandoura-return-track-title-and-time ()
+  "Return details about the current track title and time played."
+  (interactive)
+  (message "%s (%s/%s)"
+           (mandoura-return-data "filename")
+           (mandoura-return-time-data "time-pos")
+           (mandoura-return-time-data "duration")))
+
 (provide 'mandoura)
 ;;; mandoura.el ends here
