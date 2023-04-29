@@ -106,6 +106,13 @@ Regardless of ARGS, always start mpv with --input-ipc-server."
       mandoura-last-playlist
     (make-temp-file mandoura-playlist-file-base)))
 
+(defun mandoura--make-process (playlist)
+  "Run `make-process' and pass PLAYLIST to `mandoura-with-args'."
+  (make-process
+   :name "mandoura"
+   :buffer (get-buffer-create "*mandoura*")
+   :command (mandoura-with-args playlist)))
+
 ;;;###autoload
 (defun mandoura-play-files (files)
   "Create a playlist out of FILES and play it with mpv.
@@ -133,10 +140,7 @@ the user to replay it.  Else create a new temporary file."
         (erase-buffer)
         (insert (mapconcat #'identity files "\n"))
         (save-buffer)))
-    (when (make-process
-           :name "mandoura"
-           :buffer (get-buffer-create "*mandoura*")
-           :command (mandoura-with-args playlist))
+    (when (mandoura--make-process playlist)
       (setq mandoura-last-playlist playlist))))
 
 (defun mandoura--return-files (dir)
@@ -165,10 +169,7 @@ the user to replay it.  Else create a new temporary file."
   (unless (executable-find "mpv")
     (error "Cannot find mpv executable; aborting"))
   (mandoura--kill-running-process)
-  (make-process
-   :name "mandoura"
-   :buffer (get-buffer-create "*mandoura*")
-   :command (mandoura-with-args playlist))
+  (mandoura--make-process playlist)
   (setq mandoura-last-playlist playlist))
 
 ;;;; Communicate with the socket (--input-ipc-server)
