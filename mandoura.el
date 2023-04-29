@@ -108,10 +108,21 @@ Regardless of ARGS, always start mpv with --input-ipc-server."
 
 (defun mandoura--make-process (playlist)
   "Run `make-process' and pass PLAYLIST to `mandoura-with-args'."
-  (make-process
-   :name "mandoura"
-   :buffer (get-buffer-create "*mandoura*")
-   :command (mandoura-with-args playlist)))
+  (let ((stdout-buffer (get-buffer-create "*mandoura*")))
+    (make-process
+     :name "mandoura"
+     :buffer stdout-buffer
+     :command (mandoura-with-args playlist)
+     ;; FIXME 2023-04-29: Add a :sentinel that makes the resulting
+     ;; buffer readable.  Maybe it suffices to just run a specific
+     ;; major-mode there.  Which one?
+
+     ;; :sentinel (lambda (process _)
+     ;;             (unless (process-live-p process)
+     ;;               (when (buffer-live-p stdout-buffer)
+     ;;                 (with-current-buffer stdout-buffer
+     ;;                   (shell-mode)))))
+     )))
 
 ;;;###autoload
 (defun mandoura-play-files (files)
