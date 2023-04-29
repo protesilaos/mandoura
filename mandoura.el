@@ -174,6 +174,7 @@ the user to replay it.  Else create a new temporary file."
 
 ;;;; Communicate with the socket (--input-ipc-server)
 
+;; See <https://mpv.io/manual/master/#properties>.
 (defun mandoura--get-from-mpv-socket (property)
   "Get PROPERTY from `mandoura--return-mpv-socket'."
   (unless (executable-find "socat")
