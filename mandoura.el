@@ -63,15 +63,13 @@ not need an extension to be readable by mpv."
 (defvar mandoura--process-name "mandoura"
   "Name of process made by `mandoura-play-files' or related.")
 
-(defun mandoura--running-process-p ()
+(defun mandoura--get-process ()
   "Return `mandoura--process-name' or nil."
   (get-process mandoura--process-name))
 
-(defun mandoura-kill-running-process ()
-  "Prompt to kill running process, if present."
-  (interactive)
-  (when-let* ((process (mandoura--running-process-p))
-              ((yes-or-no-p "Running process found; kill it to continue?")))
+(defun mandoura--kill-running-process ()
+  "Kill return value of `mandoura--get-process', if present."
+  (when-let ((process (mandoura--get-process)))
     (kill-process process)))
 
 (defvar mandoura-playlist-file-base "mandoura-playlist-"
@@ -127,7 +125,7 @@ the user to replay it.  Else create a new temporary file."
   (interactive (list (dired-get-marked-files)))
   (unless (executable-find "mpv")
     (error "Cannot find mpv executable; aborting"))
-  (mandoura-kill-running-process)
+  (mandoura--kill-running-process)
   (when-let* ((playlist (mandoura--return-playlist))
               (buf (find-file-noselect playlist)))
     (unless (equal playlist mandoura-last-playlist)
@@ -167,7 +165,7 @@ the user to replay it.  Else create a new temporary file."
   (interactive (list (mandoura-playlist-prompt)))
   (unless (executable-find "mpv")
     (error "Cannot find mpv executable; aborting"))
-  (mandoura-kill-running-process)
+  (mandoura--kill-running-process)
   (make-process
    :name "mandoura"
    :buffer (get-buffer-create "*mandoura*")
