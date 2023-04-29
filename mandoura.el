@@ -161,7 +161,6 @@ the user to replay it.  Else create a new temporary file."
 ;;;###autoload
 (defun mandoura-play-playlist (playlist)
   "Like `mandoura-play-files' but with given PLAYLIST file."
-  ;; (declare (interactive-only t))
   (interactive (list (mandoura-playlist-prompt)))
   (unless (executable-find "mpv")
     (error "Cannot find mpv executable; aborting"))
