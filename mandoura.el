@@ -192,7 +192,6 @@ the user to replay it.  Else create a new temporary file."
   (let ((json-object-type 'plist))
     (plist-get (json-read-from-string json) :data)))
 
-;; TODO 2023-04-06: How to convert seconds to minutes?
 (defvar mandoura--mpv-properties
   '(("media-title" . "Title of current item")
     ("duration" . "Duration of current item")
@@ -210,6 +209,31 @@ the user to replay it.  Else create a new temporary file."
   "Prompt for an mpv property."
   (let ((completion-extra-properties `(:annotation-function ,#'mandoura--property-annotation)))
     (completing-read "Select mpv property: " mandoura--mpv-properties)))
+
+;; FIXME 2023-04-29: I have not tested thoroughly the conversion from
+;; seconds.
+(defun mandoura--seconds-to-minutes (seconds)
+  "Convert a number representing SECONDS to MM:SS notation."
+  (let ((minutes (/ seconds 60))
+        (seconds (% seconds 60)))
+    (format "%.2d:%.2d" minutes seconds)))
+
+(defun mandoura--seconds-to-hours (seconds)
+  "Convert a number representing SECONDS to HH:MM:SS notation."
+  (let* ((hours (/ seconds 3600))
+         (minutes (/ (% seconds 3600) 60))
+         (seconds (% seconds 60)))
+    (format "%.2d:%.2d:%.2d" hours minutes seconds)))
+
+(defun mandoura--seconds-to-minutes-or-hours (seconds)
+  "Convert SECONDS to either minutes or hours, depending on the value."
+  (if (> seconds 3599)
+      (mandoura--seconds-to-hours seconds)
+    (mandoura--seconds-to-minutes seconds)))
+
+(defun mandoura--convert-string-to-integer (string)
+  "Convert STRING to integer."
+  (truncate (string-to-number string)))
 
 (defun mandoura-return-data (property)
   "Return data from the mpv socket matching PROPERTY."
