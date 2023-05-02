@@ -113,9 +113,13 @@ Regardless of ARGS, always start mpv with --input-ipc-server."
      :name "mandoura"
      :buffer stdout-buffer
      :command (mandoura-with-args playlist)
+     :connection 'pipe
      ;; FIXME 2023-04-29: Add a :sentinel that makes the resulting
      ;; buffer readable.  Maybe it suffices to just run a specific
      ;; major-mode there.  Which one?
+     ;;
+     ;; NOTE 2023-04-30: I tried the :coding keyword of
+     ;; `make-process', but I did not get the desired results.
 
      ;; :sentinel (lambda (process _)
      ;;             (unless (process-live-p process)
