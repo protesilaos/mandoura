@@ -189,6 +189,26 @@ the user to replay it.  Else create a new temporary file."
   (mandoura--make-process playlist)
   (setq mandoura-last-playlist playlist))
 
+;;;###autoload
+(defun mandoura-play-file-with-optional-subs (file &optional subtitles)
+  "Prompt for FILE to play, with optional SUBTITLES file.
+
+Prompt for SUBTITLES, which is a file that contains subtitles
+pertinent to FILE.
+
+When called from Lisp FILE and SUBTITLES are file paths,
+represented as strings."
+  (interactive
+   (list
+    (read-file-name "Select media file: ")
+    (read-file-name "Select subtitles file: ")))
+  (unless (executable-find "mpv")
+    (error "Cannot find mpv executable; aborting"))
+  (mandoura--kill-running-process)
+  (mandoura--make-process
+   file
+   (when subtitles `(,(format "--sub-file=%s" subtitles)))))
+
 ;;;; Communicate with the socket (--input-ipc-server)
 
 ;; See <https://mpv.io/manual/master/#properties>.
