@@ -106,13 +106,15 @@ Regardless of ARGS, always start mpv with --input-ipc-server."
       mandoura-last-playlist
     (make-temp-file mandoura-playlist-file-base)))
 
-(defun mandoura--make-process (playlist)
-  "Run `make-process' and pass PLAYLIST to `mandoura-with-args'."
+(defun mandoura--make-process (file &optional args)
+  "Run `make-process' and pass FILE to `mandoura-with-args'.
+With optional ARGS as a list of strings, use them as command line
+arguments for mpv.  Else fall back to `mandoura-default-args'."
   (let ((stdout-buffer (get-buffer-create "*mandoura*")))
     (make-process
      :name "mandoura"
      :buffer stdout-buffer
-     :command (mandoura-with-args playlist)
+     :command (mandoura-with-args file args)
      :connection 'pipe
      ;; FIXME 2023-04-29: Add a :sentinel that makes the resulting
      ;; buffer readable.  Maybe it suffices to just run a specific
