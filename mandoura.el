@@ -115,7 +115,6 @@ arguments for mpv.  Else fall back to `mandoura-default-args'."
      :name "mandoura"
      :buffer stdout-buffer
      :command (mandoura-with-args file args)
-     :connection 'pipe
      ;; FIXME 2023-04-29: Add a :sentinel that makes the resulting
      ;; buffer readable.  Maybe it suffices to just run a specific
      ;; major-mode there.  Which one?
