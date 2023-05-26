@@ -92,7 +92,7 @@ ARGS is a list of strings.  If ARGS is nil use
 Regardless of ARGS, always start mpv with --input-ipc-server."
   `("mpv"
     ,(format "--playlist=%s" file)
-    ,@(if args args mandoura-default-args)
+    ,@(or args mandoura-default-args)
     ,(format "--input-ipc-server=%s" (mandoura--return-mpv-socket))))
 
 (defvar mandoura-last-playlist nil
