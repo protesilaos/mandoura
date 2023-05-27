@@ -83,6 +83,11 @@ not need an extension to be readable by mpv."
   (or mandoura--mpv-socket
       (setq mandoura--mpv-socket (make-temp-file "mandoura-mpv-socket"))))
 
+(defun mandoura--clean-nil-args (args)
+  "Remove nil elements from ARGS list for use in `mandoura-with-args'."
+  (when (listp args)
+    (delq nil args)))
+
 (defun mandoura-with-args (file &rest args)
   "Use mpv to play back FILE with ARGS.
 
@@ -92,7 +97,7 @@ ARGS is a list of strings.  If ARGS is nil use
 Regardless of ARGS, always start mpv with --input-ipc-server."
   `("mpv"
     ,(format "--playlist=%s" file)
-    ,@(or args mandoura-default-args)
+    ,@(or (mandoura--clean-nil-args args) mandoura-default-args)
     ,(format "--input-ipc-server=%s" (mandoura--return-mpv-socket))))
 
 (defvar mandoura-last-playlist nil
