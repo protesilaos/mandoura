@@ -120,18 +120,40 @@ arguments for mpv.  Else fall back to `mandoura-default-args'."
      :name "mandoura"
      :buffer stdout-buffer
      :command (mandoura-with-args file args)
-     ;; FIXME 2023-04-29: Add a :sentinel that makes the resulting
-     ;; buffer readable.  Maybe it suffices to just run a specific
-     ;; major-mode there.  Which one?
-     ;;
-     ;; NOTE 2023-04-30: I tried the :coding keyword of
-     ;; `make-process', but I did not get the desired results.
+     ;; FIXME 2023-05-27: The :filter works but it has two problems:
+     ;; (i) it depends on ansi-color, which I am not sure we need for
+     ;; this case and (ii) it appends the output of mpv for the
+     ;; progress of the track, whereas it would be nice to replace the
+     ;; current text with the new one so that we only have one line
+     ;; showing the position of the player.
 
-     ;; :sentinel (lambda (process _)
-     ;;             (unless (process-live-p process)
-     ;;               (when (buffer-live-p stdout-buffer)
-     ;;                 (with-current-buffer stdout-buffer
-     ;;                   (shell-mode)))))
+     ;; :filter
+     ;; (lambda (process string)
+     ;;   (when (buffer-live-p (process-buffer process))
+     ;;     (with-current-buffer (process-buffer process)
+     ;;       (let ((inhibit-read-only t)
+     ;;             (moving (= (point) (process-mark process))))
+     ;;         (save-excursion
+     ;;           ;; Insert the text, advancing the process marker.
+     ;;           (goto-char (process-mark process))
+     ;;           (insert (replace-regexp-in-string "" "\n" string))
+     ;;           (ansi-color-apply-on-region (point-min) (point))
+     ;;           (set-marker (process-mark process) (point)))
+     ;;         (when moving
+     ;;           (goto-char (process-mark process)))
+     ;;         (ansi-color-apply-on-region (line-beginning-position -1) (point))))))
+
+     ;; :sentinel
+     ;; (lambda (process _event)
+     ;;   (unless (process-live-p process)
+     ;;     (when (buffer-live-p stdout-buffer)
+     ;;       (with-current-buffer stdout-buffer
+     ;;         (let ((inhibit-read-only t))
+     ;;           (erase-buffer))
+     ;;         ;; TODO 2023-05-21: Make sure the buffer is not hidden,
+     ;;         ;; but otherwise display it via a configurable hook.
+     ;;         (display-buffer stdout-buffer)
+     ;;         ))))
      )))
 
 ;;;###autoload
