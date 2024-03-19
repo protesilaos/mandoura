@@ -178,13 +178,14 @@ Dired buffer, or the marked files.  Directories are covered as
 well.  In Lisp, FILES is a list of strings representing file
 system paths.
 
-FILES are compiled into a single list that is store in
+FILES are compiled into a single list that is stored in
 `mandoura-last-playlist'.  That is a temporary file.  It is
 located at the value of the variable `temporary-file-directory'
 with a base name of `mandoura-playlist-file-base'.
 
-If the playlist exists as a `mandoura-last-playlist' file, prompt
-the user to replay it.  Else create a new temporary file."
+If the playlist exists as a `mandoura-last-playlist' file and the user
+option `mandoura-restore-last-playlist' is set to a non-nil value,
+prompt the user to replay it.  Else create a new temporary file."
   (interactive (list (dired-get-marked-files)))
   (mandoura--mpv-p)
   (mandoura--kill-running-process)
