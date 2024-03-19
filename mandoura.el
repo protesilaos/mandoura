@@ -62,6 +62,11 @@ readable by mpv."
   :group 'mandoura
   :type '(file :must-match t))
 
+(defcustom mandoura-restore-last-playlist nil
+  "When non-nil, prompt to replay the last playlist if it is available."
+  :group 'mandoura
+  :type 'boolean)
+
 (defvar mandoura--process-name "mandoura"
   "Name of process made by `mandoura-play-files' or related.")
 
@@ -109,6 +114,7 @@ Regardless of ARGS, always start mpv with --input-ipc-server."
   "Return a new temporaty file or prompt for the previous one."
   (if (and mandoura-last-playlist
            (file-exists-p mandoura-last-playlist)
+           mandoura-restore-last-playlist
            (yes-or-no-p "Playlist exists; replay it?"))
       mandoura-last-playlist
     (make-temp-file mandoura-playlist-file-base)))
