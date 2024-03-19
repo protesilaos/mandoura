@@ -85,7 +85,7 @@ readable by mpv."
 (defvar mandoura--mpv-socket nil
   "Last value of the mpv socket.")
 
-(defun mandoura--return-mpv-socket ()
+(defun mandoura--get-mpv-socket ()
   "Return mpv socket."
   (or mandoura--mpv-socket
       (setq mandoura--mpv-socket (make-temp-file "mandoura-mpv-socket"))))
@@ -105,12 +105,12 @@ Regardless of ARGS, always start mpv with --input-ipc-server."
   `("mpv"
     ,(format "--playlist=%s" file)
     ,@(or (mandoura--clean-nil-args args) mandoura-default-args)
-    ,(format "--input-ipc-server=%s" (mandoura--return-mpv-socket))))
+    ,(format "--input-ipc-server=%s" (mandoura--get-mpv-socket))))
 
 (defvar mandoura-last-playlist nil
   "Last playlist file.")
 
-(defun mandoura--return-playlist ()
+(defun mandoura--get-playlist ()
   "Return a new temporaty file or prompt for the previous one."
   (if (and mandoura-last-playlist
            (file-exists-p mandoura-last-playlist)
@@ -184,7 +184,7 @@ the user to replay it.  Else create a new temporary file."
   (unless (executable-find "mpv")
     (error "Cannot find mpv executable; aborting"))
   (mandoura--kill-running-process)
-  (when-let* ((playlist (mandoura--return-playlist))
+  (when-let* ((playlist (mandoura--get-playlist))
               (buf (find-file-noselect playlist)))
     (unless (equal playlist mandoura-last-playlist)
       (with-current-buffer buf
@@ -194,7 +194,7 @@ the user to replay it.  Else create a new temporary file."
     (when (mandoura--make-process playlist)
       (setq mandoura-last-playlist playlist))))
 
-(defun mandoura--return-files (dir)
+(defun mandoura--get-files (dir)
   "Return list of files from DIR."
   (directory-files dir :full-path nil :no-sort))
 
@@ -207,7 +207,7 @@ the user to replay it.  Else create a new temporary file."
               ((file-exists-p dir))
               ((file-directory-p dir)))
     (completing-read "Select playlist file: "
-                     (mandoura--return-files dir)
+                     (mandoura--get-files dir)
                      nil
                      :require-match
                      nil
@@ -250,7 +250,7 @@ represented as strings."
 
 ;; See <https://mpv.io/manual/master/#properties>.
 (defun mandoura--get-from-mpv-socket (property)
-  "Get PROPERTY from `mandoura--return-mpv-socket'."
+  "Get PROPERTY from `mandoura--get-mpv-socket'."
   (unless (executable-find "socat")
     (error "Cannot find `socat'; aborting"))
   (shell-command-to-string
@@ -259,7 +259,7 @@ represented as strings."
     "command"
     "get_property"
     property
-    (mandoura--return-mpv-socket))))
+    (mandoura--get-mpv-socket))))
 
 (defun mandoura--get-json-data (json)
   "Get `:data' from plist returned by JSON string."
@@ -309,14 +309,14 @@ represented as strings."
   "Convert STRING to integer."
   (truncate (string-to-number string)))
 
-(defun mandoura-return-data (property)
+(defun mandoura-get-data (property)
   "Return data from the mpv socket matching PROPERTY."
   (interactive (list (mandoura--property-prompt)))
   (message "%s"
            (mandoura--get-json-data
             (mandoura--get-from-mpv-socket property))))
 
-(defun mandoura--return-numeric-properties ()
+(defun mandoura--get-numeric-properties ()
   "Return numeric properties from `mandoura--mpv-properties'."
   (delq nil
         (mapcar
@@ -325,21 +325,21 @@ represented as strings."
              (car property)))
          mandoura--mpv-properties)))
 
-(defun mandoura-return-time-data (property)
-  "Like `mandoura-return-data' but convert numeric PROPERTY."
-  (let ((data (mandoura-return-data property)))
-    (if (member property (mandoura--return-numeric-properties))
+(defun mandoura-get-time-data (property)
+  "Like `mandoura-get-data' but convert numeric PROPERTY."
+  (let ((data (mandoura-get-data property)))
+    (if (member property (mandoura--get-numeric-properties))
         (mandoura--seconds-to-minutes-or-hours
          (mandoura--convert-string-to-integer data))
       data)))
 
-(defun mandoura-return-track-title-and-time ()
+(defun mandoura-get-track-title-and-time ()
   "Return details about the current track title and time played."
   (interactive)
   (message "%s (%s/%s)"
-           (mandoura-return-data "filename")
-           (mandoura-return-time-data "time-pos")
-           (mandoura-return-time-data "duration")))
+           (mandoura-get-data "filename")
+           (mandoura-get-time-data "time-pos")
+           (mandoura-get-time-data "duration")))
 
 (provide 'mandoura)
 ;;; mandoura.el ends here
