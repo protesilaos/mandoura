@@ -196,8 +196,8 @@ prompt the user to replay it.  Else create a new temporary file."
         (erase-buffer)
         (insert (mapconcat #'identity files "\n"))
         (save-buffer)))
-    (when (mandoura--make-process playlist)
-      (setq mandoura-last-playlist playlist))))
+    (mandoura--make-process playlist)
+    (setq mandoura-last-playlist playlist)))
 
 (defun mandoura--get-files (dir)
   "Return list of files from DIR."
