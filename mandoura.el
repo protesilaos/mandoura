@@ -117,7 +117,7 @@ With optional ARGS as a list of strings, use them as command line
 arguments for mpv.  Else fall back to `mandoura-default-args'."
   (let ((stdout-buffer (get-buffer-create "*mandoura*")))
     (make-process
-     :name "mandoura"
+     :name mandoura--process-name
      :buffer stdout-buffer
      :command (mandoura-with-args file args)
      ;; FIXME 2023-05-27: The :filter works but it has two problems:
