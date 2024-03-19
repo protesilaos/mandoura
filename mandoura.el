@@ -55,10 +55,12 @@ Used as a fallback value for `mandoura-with-args'."
 
 (defcustom mandoura-saved-playlist-directory nil
   "File system path where saved playlists are stored.
-A playlist is a file that contains paths to media files.  It does
-not need an extension to be readable by mpv."
-  :type '(file :must-match t)
-  :group 'mandoura)
+A playlist is a file that contains paths to media files.  Those can be
+either files or directories.  In the latter case, all media files
+therein are considered.  The files do not need an extension to be
+readable by mpv."
+  :group 'mandoura
+  :type '(file :must-match t))
 
 (defvar mandoura--process-name "mandoura"
   "Name of process made by `mandoura-play-files' or related.")
