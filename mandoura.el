@@ -74,8 +74,9 @@ readable by mpv."
   "Return `mandoura--process-name' or nil."
   (get-process mandoura--process-name))
 
-(defun mandoura--kill-running-process ()
-  "Kill return value of `mandoura--get-process', if present."
+(defun mandoura-kill-process ()
+  "Kill the running Mandoura process, if present."
+  (interactive)
   (when-let ((process (mandoura--get-process)))
     (kill-process process)))
 
@@ -188,7 +189,7 @@ option `mandoura-restore-last-playlist' is set to a non-nil value,
 prompt the user to replay it.  Else create a new temporary file."
   (interactive (list (dired-get-marked-files)))
   (mandoura--mpv-p)
-  (mandoura--kill-running-process)
+  (mandoura-kill-process)
   (when-let ((playlist (mandoura--get-playlist))
              (buf (find-file-noselect playlist)))
     (unless (equal playlist mandoura-last-playlist)
@@ -226,7 +227,7 @@ path to a media file per line.  Paths can point to directories, in which
 case all media files therein are included."
   (interactive (list (mandoura-playlist-prompt)))
   (mandoura--mpv-p)
-  (mandoura--kill-running-process)
+  (mandoura-kill-process)
   (mandoura--make-process playlist)
   (setq mandoura-last-playlist playlist))
 
@@ -244,7 +245,7 @@ represented as strings."
     (read-file-name "Select media file: ")
     (read-file-name "Select subtitles file: ")))
   (mandoura--mpv-p)
-  (mandoura--kill-running-process)
+  (mandoura-kill-process)
   (mandoura--make-process
    file
    (when subtitles `(,(format "--sub-file=%s" subtitles)))))
