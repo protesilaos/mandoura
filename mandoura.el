@@ -72,13 +72,16 @@ readable by mpv."
 
 (defun mandoura--get-process ()
   "Return `mandoura--process-name' or nil."
-  (get-process mandoura--process-name))
+  (seq-filter
+   (lambda (process)
+     (string-match-p mandoura--process-name (process-name process)))
+   (process-list)))
 
 (defun mandoura-kill-process ()
   "Kill the running Mandoura process, if present."
   (interactive)
-  (when-let ((process (mandoura--get-process)))
-    (kill-process process)))
+  (when-let ((processes (mandoura--get-process)))
+    (mapc #'kill-process processes)))
 
 (defvar mandoura-playlist-file-base "mandoura-playlist-"
   "Base of temporary file name created by Mandoura commands.")
