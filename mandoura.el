@@ -164,6 +164,11 @@ arguments for mpv.  Else fall back to `mandoura-default-args'."
      ;;         ))))
      )))
 
+(defun mandoura--mpv-p ()
+  "Return error if the mpv executable is not available."
+  (unless (executable-find "mpv")
+    (error "Cannot find `mpv' executable; aborting")))
+
 ;;;###autoload
 (defun mandoura-play-files (files)
   "Create a playlist out of FILES and play it with mpv.
@@ -181,8 +186,7 @@ with a base name of `mandoura-playlist-file-base'.
 If the playlist exists as a `mandoura-last-playlist' file, prompt
 the user to replay it.  Else create a new temporary file."
   (interactive (list (dired-get-marked-files)))
-  (unless (executable-find "mpv")
-    (error "Cannot find mpv executable; aborting"))
+  (mandoura--mpv-p)
   (mandoura--kill-running-process)
   (when-let* ((playlist (mandoura--get-playlist))
               (buf (find-file-noselect playlist)))
@@ -220,8 +224,7 @@ A playlist file is any plain text format that contains one file system
 path to a media file per line.  Paths can point to directories, in which
 case all media files therein are included."
   (interactive (list (mandoura-playlist-prompt)))
-  (unless (executable-find "mpv")
-    (error "Cannot find mpv executable; aborting"))
+  (mandoura--mpv-p)
   (mandoura--kill-running-process)
   (mandoura--make-process playlist)
   (setq mandoura-last-playlist playlist))
@@ -239,8 +242,7 @@ represented as strings."
    (list
     (read-file-name "Select media file: ")
     (read-file-name "Select subtitles file: ")))
-  (unless (executable-find "mpv")
-    (error "Cannot find mpv executable; aborting"))
+  (mandoura--mpv-p)
   (mandoura--kill-running-process)
   (mandoura--make-process
    file
