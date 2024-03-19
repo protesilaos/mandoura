@@ -207,7 +207,10 @@ the user to replay it.  Else create a new temporary file."
 
 ;;;###autoload
 (defun mandoura-play-playlist (playlist)
-  "Like `mandoura-play-files' but with given PLAYLIST file."
+  "Like `mandoura-play-files' but with given PLAYLIST file.
+A playlist file is any plain text format that contains one file system
+path to a media file per line.  Paths can point to directories, in which
+case all media files therein are included."
   (interactive (list (mandoura-playlist-prompt)))
   (unless (executable-find "mpv")
     (error "Cannot find mpv executable; aborting"))
