@@ -10,7 +10,7 @@ it is a cryptic message for future generations: "MPV Access Needs
 Dired to Output User's Requested Audio".
 
 + Package name (GNU ELPA): `mandoura` (⛔ WORK-IN-PROGRESS)
-+ Git repo on SourceHut: <https://git.sr.ht/~protesilaos/mandoura>
++ Git repo on SourceHut: <https://github.com/protesilaos/mandoura>
   - Mirrors:
     + GitHub: <https://github.com/protesilaos/mandoura>
     + GitLab: <https://gitlab.com/protesilaos/mandoura>
