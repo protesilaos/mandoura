@@ -80,7 +80,7 @@ readable by mpv."
 (defun mandoura-kill-process ()
   "Kill the running Mandoura process, if present."
   (interactive)
-  (when-let ((processes (mandoura--get-process)))
+  (when-let* ((processes (mandoura--get-process)))
     (mapc #'kill-process processes)))
 
 (defvar mandoura-playlist-file-base "mandoura-playlist-"
@@ -193,8 +193,8 @@ prompt the user to replay it.  Else create a new temporary file."
   (interactive (list (dired-get-marked-files)))
   (mandoura--mpv-p)
   (mandoura-kill-process)
-  (when-let ((playlist (mandoura--get-playlist))
-             (buf (find-file-noselect playlist)))
+  (when-let* ((playlist (mandoura--get-playlist))
+              (buf (find-file-noselect playlist)))
     (unless (equal playlist mandoura-last-playlist)
       (with-current-buffer buf
         (erase-buffer)
@@ -212,9 +212,9 @@ prompt the user to replay it.  Else create a new temporary file."
 
 (defun mandoura-playlist-prompt ()
   "Prompt for playlist file in `mandoura-saved-playlist-directory'."
-  (when-let ((dir mandoura-saved-playlist-directory)
-             ((file-exists-p dir))
-             ((file-directory-p dir)))
+  (when-let* ((dir mandoura-saved-playlist-directory)
+              ((file-exists-p dir))
+              ((file-directory-p dir)))
     (completing-read "Select playlist file: "
                      (mandoura--get-files dir)
                      nil
