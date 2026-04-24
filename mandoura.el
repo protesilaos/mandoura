@@ -1,9 +1,9 @@
-;;; mandoura.el --- WORK-IN-PROGRESS Use MPV to play media files via Dired -*- lexical-binding: t -*-
+;;; mandoura.el --- WORK-IN-PROGRESS Use MPV to play media files via Dired -*- lexical-binding: t -*--
 
 ;; Copyright (C) 2023-2024  Free Software Foundation, Inc.
 
-;; Author: Protesilaos Stavrou <info@protesilaos.com>
-;; Maintainer: Protesilaos Stavrou General Issues <~protesilaos/general-issues@lists.sr.ht>
+;; Author: Protesilaos <info@protesilaos.com>
+;; Maintainer: Protesilaos General Issues <~protesilaos/general-issues@lists.sr.ht>
 ;; URL: https://github.com/protesilaos/mandoura
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/general-issues
 ;; Version: 0.0.0
@@ -148,7 +148,7 @@ arguments for mpv.  Else fall back to `mandoura-default-args'."
      ;;         (save-excursion
      ;;           ;; Insert the text, advancing the process marker.
      ;;           (goto-char (process-mark process))
-     ;;           (insert (replace-regexp-in-string "" "\n" string))
+     ;;           (insert (replace-regexp-in-string "" "\n" string))
      ;;           (ansi-color-apply-on-region (point-min) (point))
      ;;           (set-marker (process-mark process) (point)))
      ;;         (when moving
@@ -255,18 +255,58 @@ represented as strings."
 
 ;;;; Communicate with the socket (--input-ipc-server)
 
+(defun mandoura--ipc-query (query-plist)
+  "Send QUERY-PLIST to the mpv socket and return the response string."
+  (let ((socket (mandoura--get-mpv-socket))
+        (proc nil)
+        (attempts 10))
+    (unless (file-exists-p socket)
+      (error "Cannot find mpv socket at %s" socket))
+    ;; Retry connecting to the socket, as mpv may not be ready yet.
+    (while (and (not proc) (> attempts 0))
+      (condition-case nil
+          (setq proc (make-network-process :name "mandoura-ipc"
+                                           :family 'local
+                                           :service socket
+                                           :coding 'utf-8-emacs-unix))
+        (file-error
+         (setq attempts (1- attempts))
+         (unless (zerop attempts)
+           (sleep-for 0.2)))))
+    (unless proc
+      (error "Could not connect to mpv socket %s after several attempts" socket))
+    (unwind-protect
+        (progn
+          ;; Wait up to 1 second for the connection to establish.
+          (let ((status-wait-start (current-time)))
+            (while (and (memq (process-status proc) '(connect listen))
+                        (< (time-to-seconds (time-since status-wait-start)) 1))
+              (sleep-for 0.01)))
+
+          (unless (memq (process-status proc) '(run open))
+            (error "Could not connect to mpv socket %s, process status is %s"
+                   socket (process-status proc)))
+
+          (process-send-string proc (concat (json-encode query-plist) "\n"))
+
+          ;; Wait up to 2 seconds for a reply.
+          (let ((output nil)
+                (reply-wait-start (current-time)))
+            (while (and (not output)
+                        (< (time-to-seconds (time-since reply-wait-start)) 2))
+              (accept-process-output proc 0.02)
+              (with-current-buffer (process-buffer proc)
+                (when (> (point-max) (point-min))
+                  (setq output (buffer-string)))))
+            (or output
+                (error "No reply from mpv socket %s" socket)))))
+      (when (process-live-p proc)
+        (delete-process proc)))))
+
 ;; See <https://mpv.io/manual/master/#properties>.
 (defun mandoura--get-from-mpv-socket (property)
   "Get PROPERTY from `mandoura--get-mpv-socket'."
-  (unless (executable-find "socat")
-    (error "Cannot find `socat'; aborting"))
-  (shell-command-to-string
-   (format
-    "echo '{ %S: [%S, %S] }' | socat - %s"
-    "command"
-    "get_property"
-    property
-    (mandoura--get-mpv-socket))))
+  (mandoura--ipc-query `(:command ("get_property" ,property))))
 
 (defun mandoura--get-json-data (json)
   "Get `:data' from plist returned by JSON string."
@@ -328,7 +368,7 @@ represented as strings."
   (delq nil
         (mapcar
          (lambda (property)
-           (when (string-match-p "\\(duration\\|time-\\)" (car property))
+           (when (string-match-p "\(duration\|time-\"" (car property))
              (car property)))
          mandoura--mpv-properties)))
 
