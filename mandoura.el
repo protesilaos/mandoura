@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2023-2024  Free Software Foundation, Inc.
 
-;; Author: Protesilaos Stavrou <info@protesilaos.com>
-;; Maintainer: Protesilaos Stavrou General Issues <~protesilaos/general-issues@lists.sr.ht>
+;; Author: Protesilaos <info@protesilaos.com>
+;; Maintainer: Protesilaos <info@protesilaos.com>
 ;; URL: https://github.com/protesilaos/mandoura
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/general-issues
 ;; Version: 0.0.0
